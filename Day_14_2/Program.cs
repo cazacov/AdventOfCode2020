@@ -7,8 +7,7 @@ namespace Day_14_2
         static void Main(string[] args)
         {
             var computer = new Computer();
-            Console.WriteLine(computer.SumRamValues());
-
+            Console.WriteLine(computer.Ram.SumRam());
         }
     }
 }

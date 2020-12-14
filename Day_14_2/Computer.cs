@@ -8,12 +8,16 @@ namespace Day_14_2
     {
         public long AndMask;
         public long OrMask;
-        private string rawMask;
-        private List<RamValue> ramValues = new List<RamValue>();
-
+        public Ram Ram = new Ram();
+        
         public Computer()
         {
-            var lines = System.IO.File.ReadAllLines("input.txt");
+            ReadProgram("input.txt");
+        }
+
+        private void ReadProgram(string fileName)
+        {
+            var lines = System.IO.File.ReadAllLines(fileName);
             // CalculateFloats
             foreach (var str in lines)
             {
@@ -30,7 +34,6 @@ namespace Day_14_2
                     SetRam(str);
                 }
             }
-
         }
 
         private void SetRam(string str)
@@ -54,82 +57,30 @@ namespace Day_14_2
         {
             var xMask = AndMask ^ OrMask;
             var resAddr = (addr | OrMask) & (~xMask);
-            this.ramValues.Add(new RamValue()
-            {
-                xMask = xMask,
-                addrMask = resAddr,
-                value = val
-            });
-        }
 
-        public long SumRamValues()
-        {
-            UpdateCollisions();
+            List<int> bits = new List<int>();
 
-            var collistions = 0;
-            for (int i = 0; i < ramValues.Count; i++)
+            for (int i = 0; i < 36; i++)
             {
-                for (int j = 0; j < ramValues.Count; j++)
+                if ((xMask & (1L << i)) != 0)
                 {
-                    if (i == j) continue;
-                    if (ramValues[i].addrMask == ramValues[j].addrMask 
-                        && (ramValues[i].xMask & ramValues[j].xMask) > 0)
-                    {
-                        collistions++;
-                    }
+                    bits.Add(i);
                 }
             }
 
-            if (collistions > 0)
+            for (long n = 0; n < (1 << bits.Count); n++)
             {
-                throw new Exception("OMFG");
-            }
-
-            long sum = 0;
-            foreach (var ramValue  in ramValues)
-            {
-                var bits = CountBits(ramValue.xMask);
-                if (bits > 0)
+                var mask = 0L;
+                for (int i = 0; i < bits.Count; i++)
                 {
-                    sum += ramValue.value * (1L << (bits));
+                    mask |= ((n >> i) & 0x01) << bits[i];
                 }
-            }
-            return sum;
-        }
-
-        private int CountBits(long val)
-        {
-            var result = 0;
-            while (val > 0)
-            {
-                if ((val & 1) > 0)
-                {
-                    result++;
-                }
-                val >>= 1;
-            }
-            return result;
-        }
-
-        private void UpdateCollisions()
-        {
-            for (int i = ramValues.Count - 1; i > 0; i--)
-            {
-                for (int j = i-1; j >= 0; j--)
-                {
-                    if (ramValues[i].addrMask == ramValues[j].addrMask)
-                    {
-                        ramValues[j].xMask &= ~ramValues[i].xMask;
-                    }
-                }
+                this.Ram.Write(mask | resAddr, val);
             }
         }
-
 
         private void SetMask(string mask)
         {
-            this.rawMask = mask;
-
             var andM = mask;
             andM = andM.Replace("X", "1");
             AndMask = Convert.ToInt64(andM, 2);
