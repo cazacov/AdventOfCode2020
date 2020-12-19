@@ -8,7 +8,44 @@ namespace Day_19_1
     {
         public int N;
 
-        public virtual bool Matches(string str)
+        public bool DoesMatch(string str, Dictionary<string, MatchCache> cache)
+        {
+            MatchCache cacheItem;
+
+            if (cache.ContainsKey(str))
+            {
+                cacheItem = cache[str];
+            }
+            else
+            {
+                cacheItem = new MatchCache();
+                cache[str] = cacheItem;
+            }
+
+            if (cacheItem.Yes.Contains(this.N))
+            {
+                return true;
+            }
+
+            if (cacheItem.No.Contains(this.N))
+            {
+                return false;
+            }
+
+            var result = this.Matches(str, cache);
+            if (result)
+            {
+                cacheItem.Yes.Add(this.N);
+            }
+            else
+            {
+                cacheItem.No.Add((this.N));
+            }
+
+            return result;
+        }
+
+        protected virtual bool Matches(string str, Dictionary<string, MatchCache> cache)
         {
             throw new NotImplementedException();
         }
@@ -17,24 +54,15 @@ namespace Day_19_1
     public class ExactRule : Rule
     {
         public string Str;
-        public HashSet<string> matches = new HashSet<string>();
         public ExactRule(int n, string str)
         {
             this.N = n;
             this.Str = str;
-            this.matches.Add(str);
         }
 
-        public ExactRule(in int n, HashSet<string> hash)
+        protected override bool Matches(string str, Dictionary<string, MatchCache> cache)
         {
-            this.N = n;
-            this.Str = "JOIN";
-            this.matches = hash;
-        }
-
-        public override bool Matches(string str)
-        {
-            return this.matches.Contains(str);
+            return str == this.Str;
         }
 
         public override string ToString()
@@ -46,7 +74,7 @@ namespace Day_19_1
     public class OptionsRule : Rule
     {
         public List<List<int>> Options;
-        public List<ExactRule> rules = new List<ExactRule>();
+        public List<List<Rule>> ruleSets;
 
         public OptionsRule(int n, List<List<int>> options)
         {
@@ -58,6 +86,56 @@ namespace Day_19_1
         {
             return String.Join(" | ",
                 this.Options.Select(o => String.Join(" ", o.Select(op => op.ToString()))));
+        }
+
+        protected override bool Matches(string str, Dictionary<string, MatchCache> cache)
+        {
+            if (str == String.Empty)
+            {
+                return false;
+            }
+            foreach (var ruleSet in this.ruleSets)
+            {
+                if (MatchesRuleSet(str, ruleSet, cache))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool MatchesRuleSet(string str, List<Rule> ruleSet, Dictionary<string, MatchCache> cache)
+        {
+            if (str.Length == 1) {
+                if (ruleSet.Count == 1)
+                {
+                    return ruleSet[0].DoesMatch(str, cache);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (ruleSet.Count == 1)
+            {
+                return ruleSet[0].DoesMatch(str, cache);
+            }
+
+            if (ruleSet.Count > 2)
+            {
+                throw new ApplicationException("Unsupported");
+            }
+            for (int i = 1; i < str.Length; i++)
+            {
+                var head = str.Substring(0, i);
+                var tail = str.Substring(i);
+                if (ruleSet[0].DoesMatch(head, cache) && ruleSet[1].DoesMatch(tail, cache))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
