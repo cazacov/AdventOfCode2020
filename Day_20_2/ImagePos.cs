@@ -1,4 +1,4 @@
-﻿namespace Day_20_1
+﻿namespace Day_20_2
 {
     public class ImagePos
     {

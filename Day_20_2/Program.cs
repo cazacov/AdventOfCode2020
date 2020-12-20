@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Day_20_1
+namespace Day_20_2
 {
     class Program
     {
@@ -11,7 +11,6 @@ namespace Day_20_1
             var images = LoadImages();
             var puzzle = new Puzzle(images);
             var image = puzzle.ArrangeTiles();
-            puzzle.ShowImage(image);
             var monsterFinder = new MonsterFinder(image);
             monsterFinder.CalculateRoughness();
         }

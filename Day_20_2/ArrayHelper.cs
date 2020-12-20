@@ -2,6 +2,26 @@
 {
     public static class ArrayHelper
     {
+        public static long[] RotateBorders(long[] input, int times)
+        {
+            var result = new long[input.Length];
+            for (int i = 0; i < input.Length; i++)
+            {
+                result[i] = input[(i + input.Length - times) % input.Length];
+            }
+            return result;
+        }
+
+        public static long[] FlipBorders(long[] input)
+        {
+            var result = new long[input.Length];
+            for (int i = 0; i < input.Length; i++)
+            {
+                result[i] = ReverseBits(input[(input.Length - i) % input.Length]);
+            }
+            return result;
+        }
+
         public static void Flip(bool[,] image)
         {
             var ih = image.GetUpperBound(0) + 1;
@@ -16,6 +36,16 @@
                     image[ih - y - 1, x] = temp;
                 }
             }
+        }
+
+        public static long ReverseBits(long input)
+        {
+            var result = 0L;
+            for (var i = 0; i < 10; i++)
+            {
+                result |= ((input >> i) & 0x01) << (9 - i);
+            }
+            return result;
         }
 
         public static void RotateImage(bool[,] image)

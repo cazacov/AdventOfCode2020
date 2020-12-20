@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
-namespace Day_20_1
+namespace Day_20_2
 {
     class Puzzle
     {
@@ -30,17 +29,16 @@ namespace Day_20_1
                 newPos = null;
                 foreach (var pos in positions)
                 {
-                    for (int i = 0; i < 4; i++)
+                    for (var i = 0; i < 4; i++)
                     {
-                        var n = pos.Neighbors[i];
-                        if (n == null)
+                        if (pos.Neighbors[i] == null)
                         {
-                            int otherIndex = map[i];
+                            var otherIndex = map[i];
                             foreach (var image in unarranged)
                             {
-                                for (int j = 0; j < 8; j++)
+                                for (var j = 0; j < 8; j++)
                                 {
-                                    if (pos.Image.Borders[pos.Orientation][i] == Image.ReverseBits(image.Borders[j][otherIndex]))
+                                    if (pos.Image.Borders[pos.Orientation][i] == ArrayHelper.ReverseBits(image.Borders[j][otherIndex]))
                                     {
                                         newPos = new ImagePos(image, j);
                                         pos.SetNeighbor(newPos, i);
@@ -57,7 +55,6 @@ namespace Day_20_1
                                 break;
                             }
                         }
-
                         if (newPos != null)
                         {
                             break;
@@ -119,23 +116,6 @@ namespace Day_20_1
                 pos.Image.RenderAt((pos.X-minx)*8, (pos.Y - miny)*8, pos.Orientation, ref result);
             }
             return result;
-        }
-
-        public void ShowImage(bool[,] image)
-        {
-            var width = image.GetUpperBound(1) + 1;
-            var height = image.GetUpperBound(0) + 1;
-
-
-            for (var y = 0; y < height; y++)
-            {
-                var str = String.Empty;
-                for (var x = 0; x < width; x++)
-                {
-                    str += image[y, x] ? "#" : ".";
-                }
-                Console.WriteLine(str);
-            }
         }
     }
 }
