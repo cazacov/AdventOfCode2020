@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Day_22_2
 {
-    public class Deck
+    public class Deck : IDeck
     {
         private Queue<int> cards = new Queue<int>();
 
@@ -40,7 +40,7 @@ namespace Day_22_2
             return new string(result);
         }
 
-        public Deck Copy()
+        public IDeck Copy(int card1)
         {
             return new Deck(this.cards.ToArray());
         }

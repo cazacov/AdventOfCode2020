@@ -8,11 +8,11 @@ namespace Day_22_2
     public class Game
     {
         public static long n = 0;
-        public Deck player1;
-        public Deck player2;
-        private HashSet<string> previousRounds = new HashSet<string>();
+        public IDeck player1;
+        public IDeck player2;
+        private readonly HashSet<string> previousRounds = new HashSet<string>();
 
-        public Game(Deck cards1, Deck cards2)
+        public Game(IDeck cards1, IDeck cards2)
         {
             this.player1 = cards1;
             this.player2 = cards2;
@@ -41,7 +41,7 @@ namespace Day_22_2
 
                 if (card1 <= player1.Count() && card2 <= player2.Count())
                 {
-                    var subGame = new Game(player1.Copy(), player2.Copy());
+                    var subGame = new Game(player1.Copy(card1), player2.Copy(card2));
 #if (PRINT)
                     Console.WriteLine("#### Playing sub-game");
 #endif
@@ -79,7 +79,7 @@ namespace Day_22_2
             } while (!player1.IsEmpty() && !player2.IsEmpty());
 
             n++;
-            if (n % 1000 == 0)
+            if (n % 10000 == 0)
             {
                 Console.WriteLine(n);
             }
