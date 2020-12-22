@@ -1,19 +1,17 @@
-﻿//#define PRINT 
+﻿#define PRINT 
 
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
 using System;
 
 namespace Day_22_2
 {
     public class Game
     {
-        public List<int> player1;
-        public List<int> player2;
+        public Deck player1;
+        public Deck player2;
         private HashSet<string> previousRounds = new HashSet<string>();
 
-        public Game(List<int> cards1, List<int> cards2)
+        public Game(Deck cards1, Deck cards2)
         {
             this.player1 = cards1;
             this.player2 = cards2;
@@ -22,10 +20,7 @@ namespace Day_22_2
         public bool Play(Dictionary<string, bool> cache)
         {
             bool gameResult;
-            var str1 = String.Join(",", player1.Select(x => x.ToString()));
-            var str2 = String.Join(",", player2.Select(x => x.ToString()));
-            var str = str1 + "-" + str2;
-
+            var str = player1.Fingerprint() + "-" + player2.Fingerprint();
             if (cache.ContainsKey(str))
             {
                 return cache[str];
@@ -33,9 +28,7 @@ namespace Day_22_2
 
             do
             {
-                var state1 = String.Join(",", player1.Select(x => x.ToString()));
-                var state2 = String.Join(",", player2.Select(x => x.ToString()));
-                var state = state1 + "-" + state2;
+                var state = player1.Fingerprint() + "-" + player2.Fingerprint();
 
                 if (previousRounds.Contains(state))
                 {
@@ -48,15 +41,12 @@ namespace Day_22_2
                 Console.WriteLine($"\n{state}");
 #endif
 
-                var card1 = player1[0];
-                var card2 = player2[0];
+                var card1 = player1.PullTop();
+                var card2 = player2.PullTop();
 
-                if (card1 <= player1.Count - 1
-                    && card2 <= player2.Count - 1)
+                if (card1 <= player1.Count() && card2 <= player2.Count())
                 {
-                    var subGame = new Game(
-                        player1.GetRange(1, player1.Count - 1),
-                        player2.GetRange(1, player2.Count - 1));
+                    var subGame = new Game(player1.Copy(), player2.Copy());
 #if (PRINT)
                     Console.WriteLine("#### Playing sub-game");
 #endif
@@ -81,34 +71,25 @@ namespace Day_22_2
                     Console.WriteLine("Player 2 wins");
                 }
 #endif
-                player1.RemoveAt(0);
-                player2.RemoveAt(0);
                 if (gameResult)
                 {
-                    player1.Add(card1);
-                    player1.Add(card2);
+                    player1.PushBottom(card1);
+                    player1.PushBottom(card2);
                 }
                 else
                 {
-                    player2.Add(card2);
-                    player2.Add(card1);
+                    player2.PushBottom(card2);
+                    player2.PushBottom(card1);
                 }
-            } while (player1.Count > 0 && player2.Count > 0);
+            } while (!player1.IsEmpty() && !player2.IsEmpty());
             cache[str] = gameResult;
             return gameResult;
         }
 
         public string WinnerScore()
         {
-            var cards = player1.Any() ? player1 : player2;
-
-            BigInteger result = 0;
-            for (int i = 0; i < cards.Count; i++)
-            {
-                result += cards[i] * (cards.Count - i);
-            }
-
-            return result.ToString();
+            var cards = player1.IsEmpty() ? player2 : player1;
+            return cards.Score();
         }
     }
 }
