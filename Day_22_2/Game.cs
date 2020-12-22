@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿//#define PRINT 
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System;
@@ -9,53 +11,96 @@ namespace Day_22_2
     {
         public List<int> player1;
         public List<int> player2;
+        private HashSet<string> previousRounds = new HashSet<string>();
 
-        public Game()
+        public Game(List<int> cards1, List<int> cards2)
         {
-            var lines = System.IO.File.ReadAllLines("input.txt").ToList();
-            player1 = lines.Skip(1).Take(25).ToList().ConvertAll<int>(c => Int32.Parse(c)).ToList();
-            player2 = lines.Skip(28).Take(25).ToList().ConvertAll<int>(c => Int32.Parse(c)).ToList();
+            this.player1 = cards1;
+            this.player2 = cards2;
         }
 
-        public bool Play()
+        public bool Play(Dictionary<string, bool> cache)
         {
-            bool isWinnerFirst = IsWinnerFirst(this.player1, this.player2);
-            var card1 = player1[0];
-            var card2 = player2[0];
-            player1.RemoveAt(0);
-            player2.RemoveAt(0);
+            bool gameResult;
+            var str1 = String.Join(",", player1.Select(x => x.ToString()));
+            var str2 = String.Join(",", player2.Select(x => x.ToString()));
+            var str = str1 + "-" + str2;
 
-            if (isWinnerFirst)
+            if (cache.ContainsKey(str))
             {
-                player1.Add(card1);
-                player1.Add(card2);
+                return cache[str];
             }
-            else
-            {
-                player2.Add(card2);
-                player2.Add(card1);
-            }
-            return player1.Count > 0 && player2.Count > 0;
-        }
 
-        private bool IsWinnerFirst(List<int> player1, List<int> player2)
-        {
-            var card1 = player1[0];
-            var card2 = player2[0];
-            return card1 > card2;
+            do
+            {
+                var state1 = String.Join(",", player1.Select(x => x.ToString()));
+                var state2 = String.Join(",", player2.Select(x => x.ToString()));
+                var state = state1 + "-" + state2;
+
+                if (previousRounds.Contains(state))
+                {
+                    gameResult = true;
+                    break;
+                }
+                previousRounds.Add(state);
+
+#if (PRINT)
+                Console.WriteLine($"\n{state}");
+#endif
+
+                var card1 = player1[0];
+                var card2 = player2[0];
+
+                if (card1 <= player1.Count - 1
+                    && card2 <= player2.Count - 1)
+                {
+                    var subGame = new Game(
+                        player1.GetRange(1, player1.Count - 1),
+                        player2.GetRange(1, player2.Count - 1));
+#if (PRINT)
+                    Console.WriteLine("#### Playing sub-game");
+#endif
+                    gameResult = subGame.Play(cache);
+#if (PRINT)
+                    var winner = gameResult ? "Player 1" : "Player 2";
+                    Console.WriteLine($"#### Sub-game result: {winner}");
+#endif
+                }
+                else
+                {
+                    gameResult = card1 > card2;
+                }
+
+#if (PRINT)
+                if (gameResult)
+                {
+                    Console.WriteLine("Player 1 wins");
+                }
+                else
+                {
+                    Console.WriteLine("Player 2 wins");
+                }
+#endif
+                player1.RemoveAt(0);
+                player2.RemoveAt(0);
+                if (gameResult)
+                {
+                    player1.Add(card1);
+                    player1.Add(card2);
+                }
+                else
+                {
+                    player2.Add(card2);
+                    player2.Add(card1);
+                }
+            } while (player1.Count > 0 && player2.Count > 0);
+            cache[str] = gameResult;
+            return gameResult;
         }
 
         public string WinnerScore()
         {
-            var cards = new List<int>();
-            if (player1.Any())
-            {
-                cards = player1;
-            }
-            else
-            {
-                cards = player2;
-            }
+            var cards = player1.Any() ? player1 : player2;
 
             BigInteger result = 0;
             for (int i = 0; i < cards.Count; i++)
