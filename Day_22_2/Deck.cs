@@ -30,7 +30,14 @@ namespace Day_22_2
 
         public string Fingerprint()
         {
-            return String.Join(",", this.cards.Select(x => x.ToString()));
+            char[] result = new char[this.cards.Count];
+
+            int i = 0;
+            foreach (var card in this.cards)
+            {
+                result[i++] = (char)(card + 20);
+            }
+            return new string(result);
         }
 
         public Deck Copy()

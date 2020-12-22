@@ -1,4 +1,4 @@
-﻿#define PRINT 
+﻿//#define PRINT 
 
 using System.Collections.Generic;
 using System;
@@ -7,6 +7,7 @@ namespace Day_22_2
 {
     public class Game
     {
+        public static long n = 0;
         public Deck player1;
         public Deck player2;
         private HashSet<string> previousRounds = new HashSet<string>();
@@ -17,15 +18,9 @@ namespace Day_22_2
             this.player2 = cards2;
         }
 
-        public bool Play(Dictionary<string, bool> cache)
+        public bool Play()
         {
             bool gameResult;
-            var str = player1.Fingerprint() + "-" + player2.Fingerprint();
-            if (cache.ContainsKey(str))
-            {
-                return cache[str];
-            }
-
             do
             {
                 var state = player1.Fingerprint() + "-" + player2.Fingerprint();
@@ -50,7 +45,7 @@ namespace Day_22_2
 #if (PRINT)
                     Console.WriteLine("#### Playing sub-game");
 #endif
-                    gameResult = subGame.Play(cache);
+                    gameResult = subGame.Play();
 #if (PRINT)
                     var winner = gameResult ? "Player 1" : "Player 2";
                     Console.WriteLine($"#### Sub-game result: {winner}");
@@ -82,7 +77,12 @@ namespace Day_22_2
                     player2.PushBottom(card1);
                 }
             } while (!player1.IsEmpty() && !player2.IsEmpty());
-            cache[str] = gameResult;
+
+            n++;
+            if (n % 1000 == 0)
+            {
+                Console.WriteLine(n);
+            }
             return gameResult;
         }
 
