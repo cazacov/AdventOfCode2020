@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace Day_22_2
 {
     public class Deck
     {
-        private List<int> cards = new List<int>();
+        private Queue<int> cards = new Queue<int>();
 
-        public Deck(List<int> init)
+        public Deck(IEnumerable<int> init)
         {
-            cards.AddRange(init);
+            this.cards = new Queue<int>(init);
         }
 
         public bool IsEmpty()
@@ -21,24 +20,22 @@ namespace Day_22_2
 
         public int PullTop()
         {
-            var result = cards[0];
-            cards.RemoveAt(0);
-            return result;
+            return cards.Dequeue();
         }
 
         public void PushBottom(int value)
         {
-            cards.Add(value);
+            cards.Enqueue(value);
         }
 
         public string Fingerprint()
         {
-            return String.Join("-", this.cards.Select(x => x.ToString()));
+            return String.Join(",", this.cards.Select(x => x.ToString()));
         }
 
         public Deck Copy()
         {
-            return new Deck(this.cards);
+            return new Deck(this.cards.ToArray());
         }
 
         public int Count()
@@ -49,9 +46,11 @@ namespace Day_22_2
         public string Score()
         {
             long result = 0;
+            var data = this.cards.ToArray();
+
             for (int i = 0; i < cards.Count; i++)
             {
-                result += cards[i] * (cards.Count - i);
+                result += data[i] * (cards.Count - i);
             }
             return result.ToString();
         }
